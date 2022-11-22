@@ -12,3 +12,6 @@ test_bin: my_allocator.o test_alloc.cpp
 
 test:
 	./test_bin
+
+clean:
+	rm -f *.o test_bin

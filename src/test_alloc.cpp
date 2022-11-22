@@ -9,7 +9,7 @@ class TestFoo : public ::testing::Test
         void TearDown() {}
 };
 
-TEST(TestAlloc, test_init)
+TEST(TestUtils, test_init)
 {
     //initialization
     std::cout << "\nInitialization test" << std::endl;
@@ -19,7 +19,7 @@ TEST(TestAlloc, test_init)
     std::cout << "Initialization test: ok" << std::endl;
 }
 
-TEST(TestAlloc, test_alloc_ok)
+TEST(TestUtils, test_alloc_ok)
 {
     //correct allocation
     std::cout << "\nCorrect allocation test" << std::endl;
@@ -30,7 +30,7 @@ TEST(TestAlloc, test_alloc_ok)
 
 }
 
-TEST(TestAlloc, test_alloc_error)
+TEST(TestUtils, test_alloc_error)
 {
     //allocation error
     std::cout << "\nAllocation error test" << std::endl;
@@ -41,7 +41,7 @@ TEST(TestAlloc, test_alloc_error)
    
 }
 
-TEST(TestAlloc, test_reset)
+TEST(TestUtils, test_reset)
 {
     //reset
     std::cout << "\nReset test" << std::endl;
@@ -54,7 +54,7 @@ TEST(TestAlloc, test_reset)
 
 }
 
-int main (int argc, char** argv)
+int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
