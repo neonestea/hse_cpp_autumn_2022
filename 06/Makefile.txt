@@ -1,0 +1,17 @@
+CC=g++
+FLAGS=-std=c++20 -Wall -pedantic -Werror -Wextra -Wno-unused-parameter
+TEST_LIB=-lgtest -lgtest_main -lpthread
+
+all: formatter test_bin
+
+formatter: formatter.cpp
+	$(CC) $(FLAGS) -c formatter.cpp
+
+test_bin: formatter.o test_formatter.cpp
+	$(CC) $(FLAGS) formatter.o test_formatter.cpp -o test_bin $(TEST_LIB)
+
+test:
+	./test_bin
+
+clean:
+	rm -f *.o test_bin
