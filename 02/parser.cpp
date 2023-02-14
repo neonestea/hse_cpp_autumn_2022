@@ -1,5 +1,7 @@
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <cstdint>
 #include <ctype.h>
 class TokenParser
 
@@ -11,34 +13,36 @@ public:
 
     //using FuncPtr = void(*)();
     using FuncBoolPtr = void(*)(bool*);
+    using FuncInt64Ptr = uint64_t(*)(uint64_t);
     using FuncIntPtr = void(*)(int*);
-    using FuncStringStringPtr = void(*)(std::string*, std::string);
+    using FuncStringStringPtr = std::string(*)(std::string);
 
 
     FuncIntPtr startCallbackPtr = nullptr;
     FuncBoolPtr endCallbackPtr = nullptr;
     FuncStringStringPtr stringTokenCallbackPtr = nullptr;
-    FuncIntPtr digitTokenCallbackPtr = nullptr;
+    FuncInt64Ptr digitTokenCallbackPtr = nullptr;
 
     bool end_executed = false;  //for end
-    std::string longest_line = "";  //for string tokens
-    int number_of_digit_tokens = 0;  //for digit tokens
+    std::vector<std::string> string_tokens;  //for string tokens
+    std::vector<uint64_t> digit_tokens;  //for digit tokens
     int lines_count = 0; //for start
 
     bool getEndExecuted() {
         return end_executed;
     }
 
-    std::string getLongestLine() {
-        return longest_line;
-    }
-
-    int getNumberOfDigitTokens() {
-        return number_of_digit_tokens;
-    }
-
-    int getLinesCount() {
+    int getLinesCount()
+    {
         return lines_count;
+    }
+
+    std::vector<uint64_t> getDigitTokens() {
+        return digit_tokens;
+    }
+
+    std::vector<std::string> getStringTokens() {
+        return string_tokens;
     }
 
     // Устанавливаем callback-функцию перед стартом парсинга.
@@ -62,7 +66,7 @@ public:
 
     // Устанавливаем callback-функцию для обработки чисел.
 
-    void SetDigitTokenCallback(const FuncIntPtr& funcPtr)
+    void SetDigitTokenCallback(const FuncInt64Ptr& funcPtr)
     {
         digitTokenCallbackPtr = funcPtr;
     }
@@ -84,26 +88,39 @@ public:
 
     void Parse(const std::string &str) 
     {   
+        
         if (startCallbackPtr != nullptr) {
             startCallbackPtr(&lines_count);
         }
-        const std::string MAX_UINT64 = "18446744073709551615";
         std::string string_to_parse = str;
-
+        const std::string MAX_UINT64 = "18446744073709551615";
+        std::cout << "Our string is:  " << string_to_parse << std::endl;
         // Replace \t by spaces
         size_t pos = string_to_parse.find("\t");
+        size_t posn = string_to_parse.find("\n");
         while( pos != std::string::npos)
         {
             string_to_parse.replace(pos, 1, " ");
             pos = string_to_parse.find("\t", pos + 1);
         }
+        while( posn != std::string::npos)
+        {
+            string_to_parse.replace(posn, 1, " ");
+            posn = string_to_parse.find("\n", posn + 1);
+        }
         std::string next = "";
-
+        std::cout << "Our string is:  " << string_to_parse << std::endl;
         int num_of_symbols = string_to_parse.length();
         for(std::string::iterator it = string_to_parse.begin(); it != string_to_parse.end(); ++it) {
             //if next symbol is a separator or this is the last symbol we check token
+            //std::cout << "Our letter is:  " << *it << std::endl;
+            //std::cout << "num_of_symbols is:  " << num_of_symbols << std::endl;
             if (num_of_symbols == 1 || *it == ' ')
             {
+                if (num_of_symbols == 1 )
+                {
+                    next += *it;
+                }
                 std::cout << "Our token is:  " << next << std::endl;
                 if (is_number(next) == 1) 
                 {
@@ -111,7 +128,8 @@ public:
                     if (next.length() > MAX_UINT64.length() || (next.length() == MAX_UINT64.length() && next > MAX_UINT64))
                     {
                         if (stringTokenCallbackPtr != nullptr) {
-                            stringTokenCallbackPtr(&longest_line, next);
+                            std::string token_str = stringTokenCallbackPtr(next);
+                            string_tokens.push_back(token_str);
                         }
                         std::cout << "String token" << std::endl;
                     }
@@ -120,7 +138,11 @@ public:
 
                         if (digitTokenCallbackPtr != nullptr) {
                             std::cout << "Digit token" << std::endl;
-                            digitTokenCallbackPtr(&number_of_digit_tokens);
+                            uint64_t value;
+                            std::istringstream iss(next);
+                            iss >> value;
+                            uint64_t digit_str = digitTokenCallbackPtr(value);
+                            digit_tokens.push_back(digit_str);
                         }
                         
                     }
@@ -128,7 +150,8 @@ public:
                 else 
                 {
                     if (stringTokenCallbackPtr != nullptr) {
-                        stringTokenCallbackPtr(&longest_line, next);
+                        std::string token_str = stringTokenCallbackPtr(next);
+                        string_tokens.push_back(token_str);
                     }
                     std::cout << "String token" << std::endl;
                 }
@@ -156,46 +179,3 @@ public:
     }
 
 };
-/*void addCount(int* count=nullptr)
-{
-    *count = *count + 1;
-}
-
-void setExecuted(bool* executed=nullptr)
-{
-    *executed = true;
-}
-
-void checkLongest(std::string* longest=nullptr, std::string line = "")
-{
-    std::string tmp = *longest;
-    if(tmp.length() < line.length())
-    {
-        *longest = line;
-    }
-}
-
-
-int main()
-
-{
-    TokenParser parser;
-    parser.SetStartCallback(&addCount);
-    parser.SetEndCallback(&setExecuted);
-    parser.SetDigitTokenCallback(&addCount);
-     parser.SetStringTokenCallback(&checkLongest);
-    std::string my_line = "Hello wor3ld 18446744073709551615 18446744073709551616 18446744073709551614 23423 slke2\nadlfk\tdfaadsfads";
-    std::istringstream iss(my_line);
-    std::string line;
-
-    while (std::getline(iss, line)) {
-        parser.Parse(line);
-    }
-
-    std::cout << "Lines count: " << parser.getLinesCount() << std::endl;
-    std::cout << "End executed: " << parser.getEndExecuted() << std::endl;
-    std::cout << "Number of digit tokens: " << parser.getNumberOfDigitTokens() << std::endl;
-    std::cout << "Longest line: " << parser.getLongestLine() << std::endl;
-
-    return 0;
-}*/
