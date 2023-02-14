@@ -1,8 +1,6 @@
 #include <iostream>
 #include <sstream>
 #include <ctype.h>
-
-
 class TokenParser
 
 {
