@@ -44,13 +44,14 @@ int is_numeric(const char* str)
 
 PyObject* cjson_loads(PyObject* self, PyObject* args)
 {
-    char *initial_string;
-    if(!PyArg_ParseTuple(args, "s", &initial_string))
+    char *initial_string_arg;
+    if(!PyArg_ParseTuple(args, "s", &initial_string_arg))
     {
         printf("ERROR: Failed to parse arguments\n");
         return NULL;
     }
-    printf ("Initial string %s\n", initial_string);
+    char *initial_string = strdup(initial_string_arg);
+    //printf ("Initial string %s\n", initial_string);
     int len = strlen(initial_string);
     char *str = initial_string + 1; 
     str[strlen(str)-1] = '\0'; 
@@ -71,7 +72,7 @@ PyObject* cjson_loads(PyObject* self, PyObject* args)
     res[counter] = 0;
     
     PyObject *dict = NULL;
-    printf ("Created dict\n");
+    //printf ("Created dict\n");
     if (!(dict = PyDict_New())) {
         printf("ERROR: Failed to create Dict Object\n");
         return NULL;
@@ -82,15 +83,15 @@ PyObject* cjson_loads(PyObject* self, PyObject* args)
     
     for (int i = 0; i < counter; i+= 2)
     {
-        printf ("Pair number:  %d\n", i);
-        printf ("Key %s\n", res[i]);
-        printf ("Value %s\n", res[i + 1]);
-        printf ("Try to set value\n");
+        //printf ("Pair number:  %d\n", i);
+        //printf ("Key %s\n", res[i]);
+        //printf ("Value %s\n", res[i + 1]);
+        //printf ("Try to set value\n");
         if (is_numeric(res[i + 1]) == 1)
         {
-            printf("Numeric value");
+            //printf("Numeric value");
             removeChar(res[i + 1], 0);
-            printf ("Try to set value\n");
+            //printf ("Try to set value\n");
             int num;
             sscanf(res[i + 1], "%d", &num);
             if (!(value = Py_BuildValue("i", num))) {
@@ -100,7 +101,7 @@ PyObject* cjson_loads(PyObject* self, PyObject* args)
         } 
         else
         {
-            printf("String value\n");
+            //printf("String value\n");
             removeChar(res[i + 1], 0);
             if (!(value = Py_BuildValue("s", res[i + 1]))) {
                 printf("ERROR: Failed to build integer value\n");
@@ -112,9 +113,9 @@ PyObject* cjson_loads(PyObject* self, PyObject* args)
             printf("ERROR: Failed to build string value\n");
             return NULL;
         }
-        printf ("Try to set key\n");
+        //printf ("Try to set key\n");
         
-        printf ("Try to set Pair\n");
+        //printf ("Try to set Pair\n");
         if (PyDict_SetItem(dict, key, value) < 0) {
             printf("ERROR: Failed to set item\n");
             return NULL;
@@ -133,12 +134,29 @@ char* concat(const char *s1, const char *s2)
 
 char * toArray(int number)
 {
-    int n = log10(number) + 1;
+    int is_positive = 1;
+    int n = log10(abs(number)) + 1;
+    if (number < 0)
+    {
+        n = n+ 1;
+        is_positive = 0;
+    }
+    number = abs(number);
+    //printf ("number %d\n", number);
     int i;
     char *numberArray = calloc(n, sizeof(char));
+    //printf ("n %d\n", n);
     for (i = n-1; i >= 0; --i, number /= 10)
     {
+        //printf ("i %d\n", i);
+        //printf ("will be %d\n", ((number % 10) + '0'));
         numberArray[i] = (number % 10) + '0';
+    }
+    if (is_positive == 0)
+    {
+        //printf ("0m");
+        //printf ("will be %d\n", '-');
+        numberArray[0] = '-';
     }
     return numberArray;
 }
@@ -169,33 +187,32 @@ PyObject* cjson_dumps(PyObject* self, PyObject *args)
         }
         k_ = concat(k_, "\": ");
         res = concat(res, k_);
-        char* v_ = PyUnicode_AsUTF8(val);
-        if (v_ == NULL)
-        { 
-            v_ = "";
-            printf ("temp %s\n", v_);
-            printf("Not a string\n");
-            int v_tmp = PyLong_AsLong(val);
-            v_ = toArray(v_tmp);
-            res = concat(res, v_);
-        }
-        else
+        char* v_ = NULL;
+        if (PyLong_Check(val) == 0)
         {
+            v_ = PyUnicode_AsUTF8(val);
             v_ = concat("\"", v_);
             v_ = concat(v_, "\"");
             res = concat(res, v_);
         }
+        else
+        {
+            //printf ("temp %s\n", v_);
+            //printf("Not a string\n");
+            int v_tmp = PyLong_AsLong(val);
+            v_ = toArray(v_tmp);
+            res = concat(res, v_);
+        }
+       
         
-        printf ("Key %s\n", k_);
-        printf ("Value %s\n", v_);
+        //printf ("Key %s\n", k_);
+        //printf ("Value %s\n", v_);
         counter++;
     }
     res = concat(res, "}");
-    printf ("Res %s\n", res);
+    //printf ("Res [%s]\n", res);
     
-    //return PyUnicode_FromString((const char*)res);
-    PyObject* o = NULL:
-    return Py_BuildValue("s", (const char*)res);
+    return Py_BuildValue("s", res);
 }
 
 
