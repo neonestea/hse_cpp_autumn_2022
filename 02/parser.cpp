@@ -13,9 +13,9 @@ public:
 
     //using FuncPtr = void(*)();
     using FuncBoolPtr = void(*)(bool*);
-    using FuncInt64Ptr = uint64_t(*)(uint64_t);
+    using FuncInt64Ptr = void(*)(uint64_t);
     using FuncIntPtr = void(*)(int*);
-    using FuncStringStringPtr = std::string(*)(std::string);
+    using FuncStringStringPtr = void(*)(std::string);
 
 
     FuncIntPtr startCallbackPtr = nullptr;
@@ -24,8 +24,7 @@ public:
     FuncInt64Ptr digitTokenCallbackPtr = nullptr;
 
     bool end_executed = false;  //for end
-    std::vector<std::string> string_tokens;  //for string tokens
-    std::vector<uint64_t> digit_tokens;  //for digit tokens
+    
     int lines_count = 0; //for start
 
     bool getEndExecuted() {
@@ -37,13 +36,6 @@ public:
         return lines_count;
     }
 
-    std::vector<uint64_t> getDigitTokens() {
-        return digit_tokens;
-    }
-
-    std::vector<std::string> getStringTokens() {
-        return string_tokens;
-    }
 
     // Устанавливаем callback-функцию перед стартом парсинга.
 
@@ -128,8 +120,9 @@ public:
                     if (next.length() > MAX_UINT64.length() || (next.length() == MAX_UINT64.length() && next > MAX_UINT64))
                     {
                         if (stringTokenCallbackPtr != nullptr) {
-                            std::string token_str = stringTokenCallbackPtr(next);
-                            string_tokens.push_back(token_str);
+                            //std::string token_str = 
+                            stringTokenCallbackPtr(next);
+                            //vec.push_back(token_str);
                         }
                         std::cout << "String token" << std::endl;
                     }
@@ -141,8 +134,9 @@ public:
                             uint64_t value;
                             std::istringstream iss(next);
                             iss >> value;
-                            uint64_t digit_str = digitTokenCallbackPtr(value);
-                            digit_tokens.push_back(digit_str);
+                            //uint64_t digit_str = 
+                            digitTokenCallbackPtr(value);
+                           //digit_tokens.push_back(digit_str);
                         }
                         
                     }
@@ -150,8 +144,9 @@ public:
                 else 
                 {
                     if (stringTokenCallbackPtr != nullptr) {
-                        std::string token_str = stringTokenCallbackPtr(next);
-                        string_tokens.push_back(token_str);
+                        //std::string token_str = 
+                        stringTokenCallbackPtr(next);
+                        //string_tokens.push_back(token_str);
                     }
                     std::cout << "String token" << std::endl;
                 }

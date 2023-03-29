@@ -4,10 +4,12 @@
 #include <cstdint>
 #include "parser.cpp"
 
+std::vector<std::string> string_tokens;  //for string tokens
+std::vector<uint64_t> digit_tokens;
 
-uint64_t addDigit(uint64_t val)
+void addDigit(uint64_t val)
 {
-    return val;
+    digit_tokens.push_back(val);
 }
 
 void addCount(int* count=nullptr)
@@ -20,9 +22,9 @@ void setExecuted(bool* executed=nullptr)
     *executed = true;
 }
 
-std::string addString(std::string line)
+void addString(std::string line)
 {
-    return line;
+    string_tokens.push_back(line);
 }
 
 class TestFoo : public ::testing::Test
@@ -79,12 +81,12 @@ TEST(TestUtils, test_set_digit)
     while (std::getline(iss, line)) {
         parser.Parse(line);
     }
-    std::vector<uint64_t> digits_from_parser = parser.getDigitTokens();
+    //std::vector<uint64_t> digits_from_parser = parser.getDigitTokens();
     int size = static_cast<int>(digits.size());
-    ASSERT_EQ(digits.size(), digits_from_parser.size());
+    ASSERT_EQ(digits.size(), digit_tokens.size());
     for (auto  i = 0; i < size; i++)
     {
-        ASSERT_EQ(digits[i], std::to_string(digits_from_parser[i]));
+        ASSERT_EQ(digits[i], std::to_string(digit_tokens[i]));
     }
     
 }
@@ -109,12 +111,13 @@ TEST(TestUtils, test_set_string)
     while (std::getline(iss, line)) {
         parser.Parse(line);
     }
-    std::vector<std::string> strings_from_parser = parser.getStringTokens();
+    //std::vector<std::string> strings_from_parser = parser.getStringTokens();
     int size = static_cast<int>(strings.size());
-    ASSERT_EQ(strings.size(), strings_from_parser.size());
+    
+    ASSERT_EQ(strings.size(), string_tokens.size());
     for (auto  i = 0; i < size; i++)
     {
-        ASSERT_EQ(strings[i], strings_from_parser[i]);
+        ASSERT_EQ(strings[i], string_tokens[i]);
     }
 
 }
@@ -152,12 +155,14 @@ TEST(TestUtils, set_null)
     while (std::getline(iss, line)) {
         parser.Parse(line);
     }
-    std::vector<std::string> strings_from_parser = parser.getStringTokens();
-    int sizeStrings = static_cast<int>(strings_from_parser.size());
+    string_tokens.clear();
+    digit_tokens.clear();
+    //std::vector<std::string> strings_from_parser = parser.getStringTokens();
+    int sizeStrings = static_cast<int>(string_tokens.size());
     ASSERT_EQ(0, sizeStrings);
 
-    std::vector<uint64_t> digits_from_parser = parser.getDigitTokens();
-    int sizeDigits = static_cast<int>(digits_from_parser.size());
+    //std::vector<uint64_t> digits_from_parser = parser.getDigitTokens();
+    int sizeDigits = static_cast<int>(digit_tokens.size());
     ASSERT_EQ(0, sizeDigits);
     ASSERT_EQ(0, parser.getEndExecuted());
     ASSERT_EQ(0, parser.getLinesCount());
@@ -178,12 +183,14 @@ TEST(TestUtils, empty_str)
     while (std::getline(iss, line)) {
         parser.Parse(line);
     }
-    std::vector<std::string> strings_from_parser = parser.getStringTokens();
-    int sizeStrings = static_cast<int>(strings_from_parser.size());
+    string_tokens.clear();
+    digit_tokens.clear();
+    //std::vector<std::string> strings_from_parser = parser.getStringTokens();
+    int sizeStrings = static_cast<int>(string_tokens.size());
     ASSERT_EQ(0, sizeStrings);
 
-    std::vector<uint64_t> digits_from_parser = parser.getDigitTokens();
-    int sizeDigits = static_cast<int>(digits_from_parser.size());
+    //std::vector<uint64_t> digits_from_parser = parser.getDigitTokens();
+    int sizeDigits = static_cast<int>(digit_tokens.size());
     ASSERT_EQ(0, sizeDigits);
     ASSERT_EQ(0, parser.getEndExecuted());
     ASSERT_EQ(0, parser.getLinesCount());
@@ -204,12 +211,14 @@ TEST(TestUtils, only_spaces)
     while (std::getline(iss, line)) {
         parser.Parse(line);
     }
-    std::vector<std::string> strings_from_parser = parser.getStringTokens();
-    int sizeStrings = static_cast<int>(strings_from_parser.size());
+    string_tokens.clear();
+    digit_tokens.clear();
+    //std::vector<std::string> strings_from_parser = parser.getStringTokens();
+    int sizeStrings = static_cast<int>(string_tokens.size());
     ASSERT_EQ(0, sizeStrings);
 
-    std::vector<uint64_t> digits_from_parser = parser.getDigitTokens();
-    int sizeDigits = static_cast<int>(digits_from_parser.size());
+    //std::vector<uint64_t> digits_from_parser = parser.getDigitTokens();
+    int sizeDigits = static_cast<int>(digit_tokens.size());
     ASSERT_EQ(0, sizeDigits);
     ASSERT_EQ(0, parser.getEndExecuted());
     ASSERT_EQ(0, parser.getLinesCount());
